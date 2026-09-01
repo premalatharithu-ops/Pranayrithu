@@ -1,12 +1,4 @@
-import { NextResponse } from "next/server";
-import { makeSession, COOKIE } from "../../../../lib/adminAuth";
-
-export async function POST(req){
-  const {password}=await req.json();
-  const configuredPassword=process.env.ADMIN_PASSWORD || "SpideyStaff2026!";
-  if(password!==configuredPassword)
-    return NextResponse.json({error:"Invalid password"},{status:401});
-  const res=NextResponse.json({ok:true});
-  res.cookies.set(COOKIE,makeSession(),{httpOnly:true,secure:true,sameSite:"lax",path:"/",maxAge:60*60*12});
-  return res;
-}
+import{NextResponse}from"next/server";import{cookies}from"next/headers";import{COOKIE,validSession}from"../../../../lib/adminAuth";import{supabaseAdmin}from"../../../../lib/supabase/server";
+async function auth(){return validSession((await cookies()).get(COOKIE)?.value)}
+export async function GET(){if(!await auth())return NextResponse.json({error:"Unauthorized"},{status:401});const{data,error}=await supabaseAdmin().from("products").select("*").order("id");if(error)return NextResponse.json({error:error.message},{status:500});return NextResponse.json({products:data||[]})}
+export async function PATCH(req){if(!await auth())return NextResponse.json({error:"Unauthorized"},{status:401});const{id,stock}=await req.json(),n=Number(stock);if(!Number.isInteger(n)||n<0||n>100000)return NextResponse.json({error:"Invalid stock."},{status:400});const{data,error}=await supabaseAdmin().from("products").update({stock:n,updated_at:new Date().toISOString()}).eq("id",id).select("*").single();if(error)return NextResponse.json({error:error.message},{status:500});return NextResponse.json({product:data})}
