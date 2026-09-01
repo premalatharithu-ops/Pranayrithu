@@ -1,0 +1,5 @@
+create extension if not exists pgcrypto;
+create table if not exists public.products(id bigint primary key,brand text not null,name text not null,price integer not null check(price>=0),stock integer not null default 0 check(stock>=0),image text,updated_at timestamptz not null default now());
+insert into public.products(id,brand,name,price,stock) values
+(1,'Lay''s','Classic Salted',5,20),(2,'Lay''s','India''s Magic Masala',5,20),(3,'Lay''s','Spanish Tomato Tango',5,20),(4,'Lay''s','Cream & Onion',5,20),(5,'Lay''s','Chile Limon',5,20),(6,'Bingo!','Mad Angles Achaari Masti',5,20),(7,'Bingo!','Mad Angles Tomato Madness',5,20),(8,'Bingo!','Tedhe Medhe Masala Tadka',5,20),(9,'Bingo!','Tedhe Medhe Chatpata Twist',5,20),(10,'Bingo!','Nachos Cheese',5,20),(11,'Lay''s','West Indies Hot n Sweet Chilli',5,20) on conflict(id) do nothing;
+alter table public.products enable row level security;
